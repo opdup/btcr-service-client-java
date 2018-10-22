@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/btcr-service-client-java.iml" filepath="$PROJECT_DIR$/btcr-service-client-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/btcr-service-client-java_main.iml" filepath="$PROJECT_DIR$/.idea/modules/btcr-service-client-java_main.iml" group="btcr-service-client-java" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/btcr-service-client-java_test.iml" filepath="$PROJECT_DIR$/.idea/modules/btcr-service-client-java_test.iml" group="btcr-service-client-java" />
     </modules>
   </component>
 </project>
