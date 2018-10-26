@@ -48,6 +48,7 @@ public class BTCRDIDResolver {
     //Txid to Utxos for the address in Txid
     public String getUtxos() throws IOException {
         //how to get the address???
+        return "";
     }
 
 }
