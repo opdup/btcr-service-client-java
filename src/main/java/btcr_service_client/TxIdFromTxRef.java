@@ -1,5 +1,8 @@
 package btcr_service_client;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 public class TxIdFromTxRef {
@@ -11,7 +14,13 @@ public class TxIdFromTxRef {
     }
 
     public String getTxIdFromTxRef() throws IOException{
-        return new ServiceConnection(this.url).getJson();
+        String jsonString = new ServiceConnection(this.url).getJsonString();
+        JSONObject jsonObject = new JSONObject(jsonString);
+        String txid = null;
+        if (jsonObject!=null){
+            txid = jsonObject.getString("txid");
+        }
+        return txid;
     }
 
 }

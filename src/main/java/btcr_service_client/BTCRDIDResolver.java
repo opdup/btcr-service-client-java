@@ -39,5 +39,15 @@ public class BTCRDIDResolver {
     }
 
     // Get Decoded Tx from TxId
+    public String getDecodedTx() throws IOException {
+        String txId = txIdFromTxref();
+        String url = "https://localhost:8080/tx"+ txId;
+        return new DecodedTx(url).getTxFromTxId();
+    }
+
+    //Txid to Utxos for the address in Txid
+    public String getUtxos() throws IOException {
+        //how to get the address???
+    }
 
 }

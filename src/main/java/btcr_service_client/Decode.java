@@ -11,7 +11,7 @@ public class Decode {
     }
 
     public String decode() throws IOException{
-        return new ServiceConnection(this.url).getJson();
+        return new ServiceConnection(this.url).getJsonString();
     }
 
 }

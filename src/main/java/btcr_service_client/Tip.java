@@ -11,7 +11,7 @@ public class Tip {
     }
 
     public String getTip() throws IOException{
-        return new ServiceConnection(this.url).getJson();
+        return new ServiceConnection(this.url).getJsonString();
     }
 
 }

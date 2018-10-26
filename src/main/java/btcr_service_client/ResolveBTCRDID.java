@@ -12,7 +12,7 @@ public class ResolveBTCRDID {
 
     public String resolve() throws IOException {
         ServiceConnection serviceConnection = new ServiceConnection(this.url);
-        return serviceConnection.getJson();
+        return serviceConnection.getJsonString();
     }
 
 }
