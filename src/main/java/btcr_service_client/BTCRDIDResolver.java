@@ -50,7 +50,10 @@ public class BTCRDIDResolver {
 
     //Txid to Utxos for the address in Txid
     public String getUtxos() throws IOException {
-        //how to get the address???
+        String txId = txIdFromTxref();
+        String addr = "";
+        String url = PROTOCOL + ADDRESS + ":" + PORT + "/addr/" + addr + "/spends";
+        String utxo = "";
         return "";
     }
 
