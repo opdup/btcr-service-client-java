@@ -1,7 +1,6 @@
 package btcr_service_client;
 
 import java.io.IOException;
-
 import org.json.JSONObject;
 
 public class DecodedTx {

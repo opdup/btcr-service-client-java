@@ -1,6 +1,5 @@
 package btcr_service_client;
 
-import java.awt.*;
 import java.io.IOException;
 
 public class BTCRDIDResolver {
@@ -11,14 +10,17 @@ public class BTCRDIDResolver {
     private String PROTOCOL = "https://";
     private String ADDRESS = "localhost";
     private String PORT = "8080";
+    private int TX_REF_SUBSTRING = 9;
 
+    //Constructor
     public BTCRDIDResolver(String brtcrDid){
         this.brtcrDid = brtcrDid;
-        this.txRef = this.brtcrDid.substring(9);
+        this.txRef = this.brtcrDid.substring(TX_REF_SUBSTRING);
     }
 
+
     // Resolve BTCR DID
-    public String getBrtcrDidRes() throws IOException {
+    public String getBtcrDidResolve() throws IOException {
         String url = PROTOCOL + ADDRESS + ":" + PORT + "/txref/" + this.txRef + "/resolve";
         return new ResolveBTCRDID(url).resolve();
     }
