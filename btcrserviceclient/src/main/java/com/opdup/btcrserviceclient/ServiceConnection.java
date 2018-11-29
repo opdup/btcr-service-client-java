@@ -19,7 +19,7 @@ public class ServiceConnection {
     }
 
 
-    public void connect() throws IOException {
+    private void connect() throws IOException {
         this.connection = (HttpURLConnection) this.url.openConnection();
         this.connection.setDoOutput(true);
         this.connection.setInstanceFollowRedirects(false);

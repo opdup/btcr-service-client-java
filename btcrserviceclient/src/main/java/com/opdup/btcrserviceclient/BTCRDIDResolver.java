@@ -22,13 +22,13 @@ public class BTCRDIDResolver {
     public BTCRDIDResolver(String btcrDid) throws MalformedURLException {
         this.root = new URL(this.PROTOCOL, this.ADDRESS, this.PORT);
         this.btcrDid = btcrDid;
-        this.txRef = this.btcrDid.substring(TX_REF_SUBSTRING);
+        this.txRef = getTxRef(btcrDid);
     }
 
     public BTCRDIDResolver(String btcrDid, URL rootURl) throws MalformedURLException {
         this.root = rootURl;
         this.btcrDid = btcrDid;
-        this.txRef = this.btcrDid.substring(TX_REF_SUBSTRING);
+        this.txRef = getTxRef(btcrDid);
     }
 
     // Resolve BTCR DID
@@ -71,6 +71,12 @@ public class BTCRDIDResolver {
     public String getUtxosForAddress(String address) throws IOException {
         this.endpoint = new URL(this.root, "addr/" + address + "/spends");
         return new UtxosForAddress(this.endpoint).getUtxos();
+    }
+
+
+    //Get the TxRef from BTCR DID
+    private String getTxRef(String btcrDid){
+        return btcrDid.substring(TX_REF_SUBSTRING);
     }
 
 }
