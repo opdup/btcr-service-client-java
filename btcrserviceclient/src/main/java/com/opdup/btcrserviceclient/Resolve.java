@@ -3,11 +3,11 @@ package com.opdup.btcrserviceclient;
 import java.io.IOException;
 import java.net.URL;
 
-public class ResolveBTCRDID {
+public class Resolve {
 
     private URL url;
 
-    public ResolveBTCRDID(URL url){
+    public Resolve(URL url){
         this.url = url;
     }
 

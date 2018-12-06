@@ -32,38 +32,53 @@ public class BTCRDIDResolver {
     }
 
     // Resolve BTCR DID
-    public String getBtcrDidResolve() throws IOException {
+    public String resolve() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
-        //String url = PROTOCOL + ADDRESS + ":" + PORT + "/txref/" + this.txRef + "/resolve";
-        return new ResolveBTCRDID(this.endpoint).resolve();
+        /*
+            1. mock to return json from https://btcr-service.opdup.com/txref/txtest1:x705-jzv2-qqaz-7vuz/txid
+            2. get the tx details from https://btcr-service.opdup.com/tx/<txid>/txid
+            3. Check by hitting /tip, if there is a tip, if there isn't on then go to 4, else goto 5
+            4. From the transaction received, find the pubkey in the scriptSig
+            5. Show that the DID is revoked
+
+         */
+        return new Resolve(this.endpoint).resolve();
+    }
+
+    // Get Tx Details
+    public String getTxDetails() throws IOException {
+        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
+        return new TxDetails(this.endpoint).getTxDetails();
     }
 
     // Following a tip
     public String getTip() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/tip");
-        //String url = PROTOCOL + ADDRESS + ":" + PORT + "/txref/" + this.txRef + "/tip";
         return new Tip(this.endpoint).getTip();
+    }
+
+    // Get public key following a tip
+    public String getPublicKey() throws IOException {
+        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/tip");
+        return new Tip(this.endpoint).getPubKey();
     }
 
     // Decode TxRef
     public String decode() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/decode");
-        //String url = PROTOCOL + ADDRESS + ":" + PORT + "/txref/" + this.txRef + "/decode";
         return new Decode(this.endpoint).decode();
     }
 
     // Get TxId from TxRef
     public String txIdFromTxref() throws IOException, JSONException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
-        //String url = PROTOCOL + ADDRESS + ":" + PORT + "/txref/" + this.txRef + "/txid";
-        return new TxIdFromTxRef(this.endpoint).getTxIdFromTxRef();
+        return new TxDetails(this.endpoint).getTxIdFromTxRef();
     }
 
     // Get Decoded Tx from TxId
     public String getDecodedTx() throws IOException, JSONException {
         String txId = txIdFromTxref();
         this.endpoint = new URL(this.root, "tx/" + txId);
-        //String url = PROTOCOL + ADDRESS + ":" + PORT + "/tx" + txId;
         return new DecodedTx(this.endpoint).getTxFromTxId();
     }
 

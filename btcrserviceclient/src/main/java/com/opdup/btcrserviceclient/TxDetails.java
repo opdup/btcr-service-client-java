@@ -6,22 +6,32 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 
-public class TxIdFromTxRef {
+public class TxDetails {
 
     private URL url;
 
-    public TxIdFromTxRef(URL url){
+    private String jsonString;
+    private JSONObject jsonObject;
+    private String txId;
+
+    public TxDetails(URL url) throws IOException{
         this.url = url;
+        this.jsonString = new ServiceConnection(this.url).getJsonString();
     }
 
-    public String getTxIdFromTxRef() throws IOException, JSONException {
-        String jsonString = new ServiceConnection(this.url).getJsonString();
-        JSONObject jsonObject = new JSONObject(jsonString);
-        String txid = null;
+    public String getTxDetails() {
+        //this.jsonString = new ServiceConnection(this.url).getJsonString();
+        return this.jsonString;
+    }
+
+    public String getTxIdFromTxRef() throws JSONException {
+        //this.jsonString = new ServiceConnection(this.url).getJsonString();
+        this.jsonObject = new JSONObject(this.jsonString);
+        this.txId = null;
         if (jsonObject != null){
-            txid = jsonObject.getString("txid");
+            this.txId = jsonObject.getString("txid");
         }
-        return txid;
+        return this.txId;
     }
 
 }
