@@ -1,10 +1,13 @@
 package com.opdup.btcrserviceclient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 public class BTCRDIDResolver {
 
@@ -17,6 +20,8 @@ public class BTCRDIDResolver {
     private String ADDRESS = "localhost";
     private String PORT = "8080";
     private int TX_REF_SUBSTRING = 9;
+
+    //private static final Pattern pattern = Pattern.compile("^[^\\s]+ ([0-9a-fA-F]+)$"); //Pattern as in Universal Resolver
 
     //Constructor
     public BTCRDIDResolver(String btcrDid) throws MalformedURLException {
@@ -38,11 +43,25 @@ public class BTCRDIDResolver {
             1. mock to return json from https://btcr-service.opdup.com/txref/txtest1:x705-jzv2-qqaz-7vuz/txid
             2. get the tx details from https://btcr-service.opdup.com/tx/<txid>/txid
             3. Check by hitting /tip, if there is a tip, if there isn't on then go to 4, else goto 5
-            4. From the transaction received, find the pubkey in the scriptSig
+            4. Fetch all transactions for the address in the txref by going to /resolve.
+            4.1 From all the the transaction received, find the  one matching the txid received from 7txid
+            4.2 Find the pubkey in the scriptSig using the regular expression used by uniresolver
             5. Show that the DID is revoked
 
          */
         return new Resolve(this.endpoint).resolve();
+    }
+
+    //Resolve returning JSONObject
+    public JSONObject resolveJSONObject() throws IOException {
+        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
+        return new Resolve(this.endpoint).resolveJSONObject();
+    }
+
+    //Resolve returning JSONArray
+    public JSONArray resolveJSONArray() throws IOException {
+        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
+        return new Resolve(this.endpoint).resolveJSONArray();
     }
 
     // Get Tx Details
@@ -57,11 +76,11 @@ public class BTCRDIDResolver {
         return new Tip(this.endpoint).getTip();
     }
 
-    // Get public key following a tip
+    /*// Get public key following a tip
     public String getPublicKey() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/tip");
         return new Tip(this.endpoint).getPubKey();
-    }
+    }*/
 
     // Decode TxRef
     public String decode() throws IOException {
@@ -92,6 +111,73 @@ public class BTCRDIDResolver {
     //Get the TxRef from BTCR DID
     private String getTxRef(String btcrDid){
         return btcrDid.substring(TX_REF_SUBSTRING);
+    }
+
+    //Get the TxId from the TxDetails class
+    private String getTxId() throws IOException{
+        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
+        return new TxDetails(this.endpoint).getTxIdFromTxRef();
+    }
+
+
+    public String getDDOForTxref() throws IOException {
+
+        String pubKey = null;
+        String txid = getTxId();
+        String tip = getTip();
+        String asm = null;
+
+        if (tip != null){
+            return "BTCR DID couldn't be resolved";
+        }else{
+
+            JSONArray allTxs = resolveJSONArray();
+            JSONArray vin;
+
+            JSONObject object;
+            JSONObject txObject;
+            JSONObject scriptSig = null;
+            JSONObject vinObject = null;
+
+            String txIdString = null;
+
+            for (int i = 0; i < allTxs.length(); i++){
+
+                object = allTxs.getJSONObject(i);
+                txObject = object.getJSONObject("Transaction");
+                txIdString = txObject.getString("txid");
+
+                if (txIdString.equals(txid)){
+
+                    vin = txObject.getJSONArray("vin");
+                    for (int j = 0; j < vin.length(); j++){
+                        vinObject = vin.getJSONObject(j);
+                        scriptSig = vinObject.getJSONObject("scriptSig");
+                    }
+
+                    if (scriptSig == null){
+                        return null;
+                    }
+
+                    asm = scriptSig.getString("asm");
+
+                    if (asm == null){
+                        return null;
+                    }
+
+                    String[] values = asm.split("\\s+");
+                    pubKey = values[1];
+
+                }
+
+            }
+
+        }
+
+        /*loop over alltxs to find tx matching txid
+                    use regexp matching to find pubkey in tx
+                    return pubkyey for now*/
+        return pubKey;
     }
 
 }

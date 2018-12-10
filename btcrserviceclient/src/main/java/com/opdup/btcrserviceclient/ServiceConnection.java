@@ -1,5 +1,6 @@
 package com.opdup.btcrserviceclient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,6 +14,7 @@ public class ServiceConnection {
 
     private URL url;
     private HttpURLConnection connection;
+    private String json = null;
 
     public ServiceConnection(URL url) throws IOException{
         this.url = url;
@@ -30,15 +32,22 @@ public class ServiceConnection {
     }
 
     public String getJsonString() throws IOException {
-        String json = null;
         connect();
         InputStream inputStream = connection.getInputStream();
-        json = new Scanner(inputStream, "UTF-8").useDelimiter("\\Z").next();
-        return json;
+        this.json = new Scanner(inputStream, "UTF-8").useDelimiter("\\Z").next();
+        if (json == null){
+            return "null";
+        }else{
+            return this.json;
+        }
     }
 
     public JSONObject getJsonObject() throws IOException, JSONException {
         return new JSONObject(getJsonString());
+    }
+
+    public JSONArray getJsonArray() throws IOException {
+        return new JSONArray(getJsonString());
     }
 
 }
