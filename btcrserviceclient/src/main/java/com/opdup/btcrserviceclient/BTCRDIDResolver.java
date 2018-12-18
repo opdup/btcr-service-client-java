@@ -7,7 +7,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 public class BTCRDIDResolver {
 
@@ -21,8 +20,6 @@ public class BTCRDIDResolver {
     private String PORT = "8080";
     private int TX_REF_SUBSTRING = 9;
 
-    //private static final Pattern pattern = Pattern.compile("^[^\\s]+ ([0-9a-fA-F]+)$"); //Pattern as in Universal Resolver
-
     //Constructor
     public BTCRDIDResolver(String btcrDid) throws MalformedURLException {
         this.root = new URL(this.PROTOCOL, this.ADDRESS, this.PORT);
@@ -30,7 +27,7 @@ public class BTCRDIDResolver {
         this.txRef = getTxRef(btcrDid);
     }
 
-    public BTCRDIDResolver(String btcrDid, URL rootURl) throws MalformedURLException {
+    public BTCRDIDResolver(String btcrDid, URL rootURl) {
         this.root = rootURl;
         this.btcrDid = btcrDid;
         this.txRef = getTxRef(btcrDid);
@@ -76,27 +73,21 @@ public class BTCRDIDResolver {
         return new Tip(this.endpoint).getTip();
     }
 
-    /*// Get public key following a tip
-    public String getPublicKey() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/tip");
-        return new Tip(this.endpoint).getPubKey();
-    }*/
-
     // Decode TxRef
     public String decode() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/decode");
         return new Decode(this.endpoint).decode();
     }
 
-    // Get TxId from TxRef
-    public String txIdFromTxref() throws IOException, JSONException {
+    //Get the TxId from the TxDetails class
+    public String getTxId() throws IOException{
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
         return new TxDetails(this.endpoint).getTxIdFromTxRef();
     }
 
     // Get Decoded Tx from TxId
     public String getDecodedTx() throws IOException, JSONException {
-        String txId = txIdFromTxref();
+        String txId = getTxId();
         this.endpoint = new URL(this.root, "tx/" + txId);
         return new DecodedTx(this.endpoint).getTxFromTxId();
     }
@@ -107,19 +98,12 @@ public class BTCRDIDResolver {
         return new UtxosForAddress(this.endpoint).getUtxos();
     }
 
-
     //Get the TxRef from BTCR DID
     private String getTxRef(String btcrDid){
-        return btcrDid.substring(TX_REF_SUBSTRING);
+        return "txtest1:" + btcrDid.substring(TX_REF_SUBSTRING);
     }
 
-    //Get the TxId from the TxDetails class
-    private String getTxId() throws IOException{
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
-        return new TxDetails(this.endpoint).getTxIdFromTxRef();
-    }
-
-
+    //Return public key
     public String getDDOForTxref() throws IOException {
 
         String pubKey = null;
@@ -174,9 +158,6 @@ public class BTCRDIDResolver {
 
         }
 
-        /*loop over alltxs to find tx matching txid
-                    use regexp matching to find pubkey in tx
-                    return pubkyey for now*/
         return pubKey;
     }
 

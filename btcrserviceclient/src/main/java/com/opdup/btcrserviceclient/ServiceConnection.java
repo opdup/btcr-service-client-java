@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.Scanner;
 
@@ -20,15 +21,21 @@ public class ServiceConnection {
         this.url = url;
     }
 
-
-    private void connect() throws IOException {
-        this.connection = (HttpURLConnection) this.url.openConnection();
-        this.connection.setDoOutput(true);
-        this.connection.setInstanceFollowRedirects(false);
-        this.connection.setRequestMethod("GET");
-        this.connection.setRequestProperty("Content-Type", "application/json");
-        this.connection.setRequestProperty("charset", "utf-8");
-        this.connection.connect();
+    private void connect()  {
+        try {
+            this.connection = (HttpURLConnection) this.url.openConnection();
+            this.connection.setDoOutput(true);
+            this.connection.setInstanceFollowRedirects(false);
+            this.connection.setRequestMethod("GET");
+            this.connection.setRequestProperty("Content-Type", "application/json");
+            this.connection.setRequestProperty("charset", "utf-8");
+            //this.connection.setConnectTimeout(5000);  //Connection timeout
+            this.connection.connect();
+        } catch (SocketException e) {
+            System.err.print(e.getMessage());
+        } catch (IOException e) {
+            System.err.print(e.getMessage());
+        }
     }
 
     public String getJsonString() throws IOException {
@@ -37,7 +44,7 @@ public class ServiceConnection {
         this.json = new Scanner(inputStream, "UTF-8").useDelimiter("\\Z").next();
         if (json == null){
             return "null";
-        }else{
+        } else {
             return this.json;
         }
     }

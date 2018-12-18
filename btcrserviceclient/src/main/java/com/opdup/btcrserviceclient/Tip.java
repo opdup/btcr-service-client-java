@@ -38,23 +38,4 @@ public class Tip {
         return tipJsonString;
     }
 
-    /*public String getPubKey() throws IOException {
-        this.tipJsonString = getTip();
-        this.jsonArray = new JSONArray(tipJsonString);
-        String publicKey=null;
-        for (int i=0; i<jsonArray.length(); i++){
-            jsonObject = jsonArray.getJSONObject(i);
-            boolean inTipChain = jsonObject.getBoolean("InTipChain");
-            if (inTipChain){
-                return "DID Revoked";
-            }else {
-                String asm = jsonObject.getString("asm");          //Scriptsig asm
-                String[] values = asm.split("\\s*");
-                publicKey = values[1];
-                return publicKey;
-            }
-        }
-        return publicKey;
-    }*/
-
 }

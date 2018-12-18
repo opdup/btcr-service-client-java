@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -13,8 +14,11 @@ import java.net.URL;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.SocketPolicy;
 
-public class ServiceConnectionTester {
+public class ServiceConnectionTest {
+
+    private static final int TIMEOUT = 5000;
 
     //private String BtcrDidString = "did:btcr:x705-jzv2-qqaz-7vuz"; //https://github.com/w3c-ccg/did-hackathon-2018/blob/master/BTCR-DID-Tests.md
     private String txRef = "x705-jzv2-qqaz-7vuz";                  //https://github.com/w3c-ccg/did-hackathon-2018/blob/master/BTCR-DID-Tests.md
@@ -24,12 +28,11 @@ public class ServiceConnectionTester {
 
     private ServiceConnection serviceConnection;
 
-    //@Mock
     private MockWebServer mockWebServer;
     private MockResponse mockResponse;
 
     //Constructor
-    public ServiceConnectionTester() throws MalformedURLException {
+    public ServiceConnectionTest() throws MalformedURLException {
         mockResponse = new MockResponse();
         mockResponse.addHeader("Content-Type", "application/json; charset=utf-8")
                     .addHeader("Cache-Control", "no-cache");
@@ -179,6 +182,19 @@ public class ServiceConnectionTester {
         String jsonString = serviceConnection.getJsonString();
         assertTrue(!jsonString.isEmpty());
         assertEquals(jsonString, "{ Get UTXOs for Address }");
+    }
+
+    @Test(timeout = TIMEOUT)
+    public void testServerTimeout() {
+        mockResponse.setSocketPolicy(SocketPolicy.NO_RESPONSE);
+        mockWebServer.enqueue(mockResponse);
+        url = mockWebServer.url("/txref" + this.txRef + "/resolve").url();
+
+        try{
+            serviceConnection = new ServiceConnection(url);
+        }catch (IOException e){
+            assertEquals(e.getMessage(), "");
+        }
     }
 
 }
