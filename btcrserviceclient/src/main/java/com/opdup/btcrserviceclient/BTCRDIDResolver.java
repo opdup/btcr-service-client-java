@@ -36,16 +36,6 @@ public class BTCRDIDResolver {
     // Resolve BTCR DID
     public String resolve() throws IOException {
         this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
-        /*
-            1. mock to return json from https://btcr-service.opdup.com/txref/txtest1:x705-jzv2-qqaz-7vuz/txid
-            2. get the tx details from https://btcr-service.opdup.com/tx/<txid>/txid
-            3. Check by hitting /tip, if there is a tip, if there isn't on then go to 4, else goto 5
-            4. Fetch all transactions for the address in the txref by going to /resolve.
-            4.1 From all the the transaction received, find the  one matching the txid received from 7txid
-            4.2 Find the pubkey in the scriptSig using the regular expression used by uniresolver
-            5. Show that the DID is revoked
-
-         */
         return new Resolve(this.endpoint).resolve();
     }
 
