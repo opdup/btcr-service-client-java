@@ -1,0 +1,26 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.json:json:20180813'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.23.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.12.0'
+}
+
+task deleteJar(type: Delete) {
+    delete 'libs/jars/btcrserviceclientlib.jar'
+}
+
+task createJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('libs/jars/')
+    include('classes.jar')
+    rename('classes.jar', 'btcrserviceclientlib.jar')
+}
+
+createJar.dependsOn(deleteJar, build)
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
