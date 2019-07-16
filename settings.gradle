@@ -1,1 +1,2 @@
-include ':app', ':btcrserviceclient'
+include ':btcrserviceclient'
+include ':jsonldjava'

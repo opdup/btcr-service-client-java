@@ -1,9 +1,7 @@
 package com.opdup.btcrserviceclient;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URL;
 
 public class Resolve {
@@ -14,26 +12,8 @@ public class Resolve {
         this.url = url;
     }
 
-    //Get String
-    public String resolve() throws IOException {
-        ServiceConnection serviceConnection = new ServiceConnection(this.url);
-        return serviceConnection.getJsonString();
+    public JSONArray resolve() {
+        return new ServiceConnection(this.url).getJsonArray();
     }
-
-    //Get JSONObject
-    public JSONObject resolveJSONObject() throws IOException {
-        ServiceConnection serviceConnection = new ServiceConnection(this.url);
-        return serviceConnection.getJsonObject();
-    }
-
-    //Get JSONArray
-    public JSONArray resolveJSONArray() throws IOException {
-        ServiceConnection serviceConnection = new ServiceConnection(this.url);
-        return serviceConnection.getJsonArray();
-    }
-
-    //public String getTxForTxid(String Txid){}
-
-    //public String getPubKeyHex(String transaction){}
 
 }

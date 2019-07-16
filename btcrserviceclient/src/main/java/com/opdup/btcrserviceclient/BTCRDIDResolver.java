@@ -4,151 +4,148 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class BTCRDIDResolver {
 
-    private String btcrDid;
     private String txRef;
 
     private URL root;
     private URL endpoint;
-    private String PROTOCOL = "https";
-    private String ADDRESS = "localhost";
-    private String PORT = "8080";
     private int TX_REF_SUBSTRING = 9;
+    public JSONArray resolveResult;
+    public JSONObject decodeResult;
+    public String pubKeyResult;
 
-    //Constructor
-    public BTCRDIDResolver(String btcrDid) throws MalformedURLException {
-        this.root = new URL(this.PROTOCOL, this.ADDRESS, this.PORT);
-        this.btcrDid = btcrDid;
-        this.txRef = getTxRef(btcrDid);
+    public BTCRDIDResolver(String btcrDid, URL rootURL) {
+        this.root = rootURL;
+        this.txRef = "txtest1:" + btcrDid.substring(TX_REF_SUBSTRING);
     }
 
-    public BTCRDIDResolver(String btcrDid, URL rootURl) {
-        this.root = rootURl;
-        this.btcrDid = btcrDid;
-        this.txRef = getTxRef(btcrDid);
-    }
-
-    // Resolve BTCR DID
-    public String resolve() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
+    //Resolve
+    public JSONArray resolve() {
+        try {
+            this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
         return new Resolve(this.endpoint).resolve();
     }
 
-    //Resolve returning JSONObject
-    public JSONObject resolveJSONObject() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
-        return new Resolve(this.endpoint).resolveJSONObject();
+    //Get TxID
+    public String getTxId() {
+        try {
+            this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
+        return new TxDetails(this.endpoint).getTxId();
     }
 
-    //Resolve returning JSONArray
-    public JSONArray resolveJSONArray() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/resolve");
-        return new Resolve(this.endpoint).resolveJSONArray();
-    }
-
-    // Get Tx Details
-    public String getTxDetails() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
-        return new TxDetails(this.endpoint).getTxDetails();
+    //get UTXO index
+    public int getUtxoIndex() {
+        try {
+            this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
+        return new TxDetails(this.endpoint).getUtxoIndex();
     }
 
     // Following a tip
-    public String getTip() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/tip");
-        return new Tip(this.endpoint).getTip();
+    public String getTip() {
+        JSONArray allTxs = resolve();
+        String txid = getTxId();
+        if (allTxs == null) {
+            return "null";
+        }
+        if (new Tip(allTxs).followTip(txid)) {
+            return "Unspent";
+        } else {
+            return "Spent";
+        }
     }
 
     // Decode TxRef
-    public String decode() throws IOException {
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/decode");
+    public JSONObject decode() {
+        try {
+            this.endpoint = new URL(this.root, "txref/" + this.txRef + "/decode");
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
         return new Decode(this.endpoint).decode();
     }
 
-    //Get the TxId from the TxDetails class
-    public String getTxId() throws IOException{
-        this.endpoint = new URL(this.root, "txref/" + this.txRef + "/txid");
-        return new TxDetails(this.endpoint).getTxIdFromTxRef();
-    }
-
     // Get Decoded Tx from TxId
-    public String getDecodedTx() throws IOException, JSONException {
-        String txId = getTxId();
-        this.endpoint = new URL(this.root, "tx/" + txId);
+    public JSONObject getDecodedTx() {
+        try {
+            this.endpoint = new URL(this.root, "tx/" + getTxId());
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
         return new DecodedTx(this.endpoint).getTxFromTxId();
     }
 
     //Txid to Utxos for the address in Txid
-    public String getUtxosForAddress(String address) throws IOException {
-        this.endpoint = new URL(this.root, "addr/" + address + "/spends");
+    public String getUtxosForAddress(String address) {
+        try {
+            this.endpoint = new URL(this.root, "addr/" + address + "/spends");
+        } catch (MalformedURLException e) {
+            System.err.print("MalformedURLException: " + e.getMessage());
+        }
         return new UtxosForAddress(this.endpoint).getUtxos();
     }
 
-    //Get the TxRef from BTCR DID
-    private String getTxRef(String btcrDid){
-        return "txtest1:" + btcrDid.substring(TX_REF_SUBSTRING);
+    //Return public key
+    public String getPublicKey() {
+
+        String txid = getTxId();
+        JSONArray allTxs = resolve();
+        String[] values = null;
+
+        String tip = getTip();
+
+        if (tip.equals("null")) {
+            return null;
+        }
+        try {
+            for (int i = 0; i < allTxs.length(); i++) {
+                JSONObject tx = allTxs.getJSONObject(i).getJSONObject("Transaction");
+                String receivedTxId = tx.getString("txid");
+                if (receivedTxId.equals(txid)) {
+
+                    int utxoIndex = getUtxoIndex();
+                    JSONObject input = tx.getJSONArray("vin").getJSONObject(utxoIndex);
+                    JSONObject scriptSig = input.getJSONObject("scriptSig");
+
+                    if (scriptSig == null) {
+                        return null;
+                    }
+
+                    String asm = scriptSig.getString("asm");
+
+                    if (asm == null) {
+                        return null;
+                    }
+
+                    values = asm.split("\\s+");
+                }
+            }
+        } catch (JSONException e) {
+            System.err.print("JSONException: " + e.getMessage());
+        }
+        return values[1] /*+ " " + tip*/;
     }
 
-    //Return public key
-    public String getDDOForTxref() throws IOException {
 
-        String pubKey = null;
-        String txid = getTxId();
-        String tip = getTip();
-        String asm = null;
-
-        if (tip != null){
-            return "BTCR DID couldn't be resolved";
-        }else{
-
-            JSONArray allTxs = resolveJSONArray();
-            JSONArray vin;
-
-            JSONObject object;
-            JSONObject txObject;
-            JSONObject scriptSig = null;
-            JSONObject vinObject = null;
-
-            String txIdString = null;
-
-            for (int i = 0; i < allTxs.length(); i++){
-
-                object = allTxs.getJSONObject(i);
-                txObject = object.getJSONObject("Transaction");
-                txIdString = txObject.getString("txid");
-
-                if (txIdString.equals(txid)){
-
-                    vin = txObject.getJSONArray("vin");
-                    for (int j = 0; j < vin.length(); j++){
-                        vinObject = vin.getJSONObject(j);
-                        scriptSig = vinObject.getJSONObject("scriptSig");
-                    }
-
-                    if (scriptSig == null){
-                        return null;
-                    }
-
-                    asm = scriptSig.getString("asm");
-
-                    if (asm == null){
-                        return null;
-                    }
-
-                    String[] values = asm.split("\\s+");
-                    pubKey = values[1];
-
-                }
-
-            }
-
-        }
-
-        return pubKey;
+    //Return DDO
+    public String getDDO() {
+        this.resolveResult = resolve();
+        this.decodeResult = decode();
+        this.pubKeyResult = getPublicKey();
+        DDO ddo = new DDO(this.txRef, this.pubKeyResult, this.decodeResult, this.resolveResult);
+        return ddo.getDDO();
     }
 
 }

@@ -4,57 +4,96 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
-import java.util.Scanner;
 
 public class ServiceConnection {
 
     private URL url;
     private HttpURLConnection connection;
-    private String json = null;
 
-    public ServiceConnection(URL url) throws IOException{
+    public ServiceConnection(URL url) {
         this.url = url;
     }
 
-    private void connect()  {
+    private void connect() {
         try {
             this.connection = (HttpURLConnection) this.url.openConnection();
-            this.connection.setDoOutput(true);
-            this.connection.setInstanceFollowRedirects(false);
+            this.connection.setDoOutput(false);
+            this.connection.setDoInput(true);
+            this.connection.setUseCaches(false);
             this.connection.setRequestMethod("GET");
             this.connection.setRequestProperty("Content-Type", "application/json");
             this.connection.setRequestProperty("charset", "utf-8");
-            //this.connection.setConnectTimeout(5000);  //Connection timeout
             this.connection.connect();
         } catch (SocketException e) {
-            System.err.print(e.getMessage());
+            System.err.print("SocketException: " + e.getMessage());
         } catch (IOException e) {
-            System.err.print(e.getMessage());
+            System.err.print("IOException: " + e.getMessage());
         }
     }
 
-    public String getJsonString() throws IOException {
-        connect();
-        InputStream inputStream = connection.getInputStream();
-        this.json = new Scanner(inputStream, "UTF-8").useDelimiter("\\Z").next();
-        if (json == null){
-            return "null";
-        } else {
-            return this.json;
+    //New getJson method
+    public String getJsonString() {
+        StringBuilder response = new StringBuilder();
+        String responseJSON;
+        try {
+
+            connect();
+
+            int status = connection.getResponseCode();
+
+            if (status != 200) {
+                throw new IOException("Error: " + status);
+            } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+            }
+
+        } catch (IOException e) {
+            System.err.print("IOException: " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+            responseJSON = response.toString();
         }
+
+        return responseJSON;
     }
 
-    public JSONObject getJsonObject() throws IOException, JSONException {
-        return new JSONObject(getJsonString());
+    public JSONObject getJsonObject() {
+
+        JSONObject response = null;
+
+        try {
+            response = new JSONObject(getJsonString());
+        } catch (JSONException e) {
+            System.err.print("JSONException: " + e.getMessage());
+        }
+
+        return response;
     }
 
-    public JSONArray getJsonArray() throws IOException {
-        return new JSONArray(getJsonString());
+    public JSONArray getJsonArray() {
+
+        JSONArray response = null;
+
+        try {
+            response = new JSONArray(getJsonString());
+        } catch (JSONException e) {
+            System.err.print("JSONException: " + e.getMessage());
+        }
+
+        return response;
     }
 
 }

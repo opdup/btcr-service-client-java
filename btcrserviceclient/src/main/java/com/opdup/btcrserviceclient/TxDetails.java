@@ -1,37 +1,45 @@
 package com.opdup.btcrserviceclient;
 
+import android.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.URL;
 
 public class TxDetails {
 
     private URL url;
 
-    private String jsonString;
     private JSONObject jsonObject;
     private String txId;
+    private Integer utxoIndex;
 
-    public TxDetails(URL url) throws IOException{
+    public TxDetails(URL url) {
         this.url = url;
-        this.jsonString = new ServiceConnection(this.url).getJsonString();
+        this.jsonObject = new ServiceConnection(this.url).getJsonObject();
     }
 
-    public String getTxDetails() {
-        //this.jsonString = new ServiceConnection(this.url).getJsonString();
-        return this.jsonString;
-    }
+    private Pair<String, Integer> getTxDetails() {
 
-    public String getTxIdFromTxRef() throws JSONException {
-        //this.jsonString = new ServiceConnection(this.url).getJsonString();
-        this.jsonObject = new JSONObject(this.jsonString);
-        this.txId = null;
-        if (jsonObject != null){
+        try {
             this.txId = jsonObject.getString("txid");
+            this.utxoIndex = jsonObject.getInt("utxo_index");
+        } catch (JSONException e) {
+            System.err.print("JSONException: " + e.getMessage());
         }
-        return this.txId;
+
+        return new Pair<>(txId, utxoIndex);
+
+    }
+
+    //Get TxID
+    public String getTxId() {
+        return getTxDetails().first;
+    }
+
+    //get UTXO index
+    public int getUtxoIndex() {
+        return getTxDetails().second;
     }
 
 }
